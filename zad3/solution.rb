@@ -15,6 +15,8 @@ class CommandParser
 		@args_ns = []
 		@a = {}
 		@opt = []
+		@d = {}
+		@c = {}
 	end
 
 	def argument(named_opt_param)
@@ -25,10 +27,10 @@ class CommandParser
 
 	def option(s_name, f_name, desc)
 		@opt << {s_name: s_name, f_name: f_name, desc: desc}
-		@c = {}
+		
 		p @opt
 		 yield(@c,true) if block_given?
-		 p @c
+		 p "c = #{@c}"
 	end
 
 	def option_with_parameter(named_opt_param)
@@ -38,6 +40,12 @@ class CommandParser
 	def parse(command_runner, argv)
 		# keys = @a.keys
 		@a.keys.each_with_index { |e, i| command_runner[e.to_sym] = argv[i] }
+		if argv[0].include?("-") || argv[0].include?("--") 
+			s = argv.join[1..-1]
+			command_runner[@c.keys[0]] = @c.values[0]
+			p "from_parse #{command_runner},   #{@opt[0].values}"
+		end
+		
 		# argv.each_with_index { |e, i| command_runner[keys[i]] = e  }
 		# p "@command_runner #{@command_runner}"
 		# yield(command_runner,argv) if block_given?
@@ -78,23 +86,23 @@ parser = CommandParser.new("rubocop")
 #   runner[:first] = value
 # end
 
-parser.argument('SECOND') do |runner, value|
-  runner[:second] = value
-end
-parser.argument("first") do |h, v|
-	h[:larodi] = v
-end
+# parser.argument('SECOND') do |runner, value|
+#   runner[:second] = value
+# end
+# parser.argument("first") do |h, v|
+# 	h[:larodi] = v
+# end
+command_runner = {}
+
 parser.option('v', 'version', 'show version number') do |runner, value|
   runner[:version] = value
 end
-parser.option('d', 'delete', 'del') do |runner, value|
-  runner[:version] = value
-end
-command_runner = {}
+# parser.option('d', 'delete', 'del') do |runner, value|
+#   runner[:version] = value
+# end
 
-parser.parse(command_runner, ['foo', 'larodi'])
-p command_runner
-
+parser.parse(command_runner, ['-v'])
+p "command_runner  = #{command_runner}"
 print parser.help
 # puts
 # p parser.opt_help
